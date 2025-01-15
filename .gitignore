@@ -2,7 +2,6 @@
 __pycache__/
 *.so
 build/
-dp/
 pg.py
 
 data_structure/queue
