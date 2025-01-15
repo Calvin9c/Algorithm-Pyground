@@ -1,6 +1,10 @@
+.vscode
 __pycache__/
 *.so
 build/
 dp/
-data_structure/
 pg.py
+
+data_structure/queue
+data_structure/stack
+data_structure/heap
