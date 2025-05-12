@@ -7,3 +7,5 @@ pg.py
 data_structure/queue
 data_structure/stack
 data_structure/heap
+
+tensor/Makefile_old
