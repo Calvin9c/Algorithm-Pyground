@@ -4,6 +4,7 @@
 #include <iostream>
 #include <limits>
 #include <vector>
+#include <functional>
 
 template <typename T>
 void bubble_sort(std::vector<T>& data){
@@ -49,103 +50,44 @@ void selection_sort(std::vector<T>& data){
 }
 
 template <typename T>
-std::vector<T> _merge(const std::vector<T>& l, const std::vector<T>& r){
+std::vector<T> merge_sort(const std::vector<T> &data){
+
+    const size_t N = data.size();
+    if (N<=1) return data;
+    std::vector<T> l=merge_sort(std::vector<T>(data.begin(), data.begin()+N/2)),
+                   r=merge_sort(std::vector<T>(data.begin()+N/2, data.end()));
 
     std::vector<T> res;
-    size_t i=0, j=0;
-    
-    while(i<l.size() && j<r.size()){
-        if(l[i] < r[j]){
+    int i=0, j=0;
+    while (i<l.size() && j<r.size()) {
+        if (l[i]<r[j]) {
             res.emplace_back(l[i++]);
-        }
-        else{
+        } else {
             res.emplace_back(r[j++]);
         }
     }
 
-    while (i < l.size()) {
-        res.emplace_back(l[i++]);
-    }
-    while (j < r.size()) {
-        res.emplace_back(r[j++]);
-    }
-
+    while (i<l.size()) res.emplace_back(l[i++]); 
+    while (j<r.size()) res.emplace_back(r[j++]);
     return res;
 }
 
 template <typename T>
-std::vector<T> merge_sort(const std::vector<T>& data){
-    size_t n = data.size();
-    if(n<=1){return data;}
-    std::vector<T> l(data.begin(), data.begin() + n / 2);
-    std::vector<T> r(data.begin() + n / 2, data.end());
-    return _merge(merge_sort(l), merge_sort(r));
-}
-
-/*quick sort*/
-/*impl with the usage of function: partition*/
-template <typename T>
-size_t partition(std::vector<T>& data, size_t low, size_t high) {
-    T pivot = data[high];
-    size_t i = low;
-
-    for (size_t j = low; j < high; ++j) {
-        if (data[j] < pivot) {
-            std::swap(data[i], data[j]);
-            ++i;
-        }
-    }
-    std::swap(data[i], data[high]); // put pivot into its position
-    return i; // return the pivot position
-}
-template <typename T>
-void _quick_sort_helper_impl_0(std::vector<T>& data, size_t low, size_t high) {
-    if (low < high) {
-
-        size_t pivot_index = partition(data, low, high);
-
-        if (pivot_index > 0) {
-            _quick_sort_helper_impl_0(data, low, pivot_index - 1);
-        }
-        _quick_sort_helper_impl_0(data, pivot_index + 1, high);
-    }
-}
-
-/*impl without using function: partition*/
-template<typename T>
-void _quick_sort_helper_impl_1(std::vector<T>& data, size_t l, size_t r){
-    if(l<r){
-        T pivot = data[l];
-        size_t i = l+1, j = r;
-        
-        while(i<j){
-            while(i<=r && data[i]<=pivot){
-                ++i;
-            }
-            while(j>l && data[j]>pivot){
-                --j;
-            }
-            if(i<j){
-                std::swap(data[i], data[j]);
+void quick_sort(std::vector<T>& data) {
+    std::function<void(const int&, const int&)> partition = 
+    [&](const int &L, const int &R){
+        if (L>=R) return;
+        const T PIVOT = data[R];
+        int i=L;
+        for (int j=L; j<R; ++j) {
+            if (data[j]<=PIVOT) {
+                std::swap(data[j], data[i++]);
             }
         }
-        std::swap(data[l], data[j]);
-        if (j > 0) _quick_sort_helper_impl_1(data, l, j-1);
-        _quick_sort_helper_impl_1(data, j+1, r);
-    }
-}
-
-template <typename T>
-void quick_sort(std::vector<T>& data /*, int impl*/) {
-    if (!data.empty()) {
-        _quick_sort_helper_impl_0(data, 0, data.size()-1);
-        // if(impl==0){
-        //     _quick_sort_helper_impl_0(data, 0, data.size()-1);
-        // }
-        // else{
-        //     _quick_sort_helper_impl_1(data, 0, data.size()-1);
-        // }
-    }
+        std::swap(data[i], data[R]);
+        partition(L, i-1); partition(i+1, R);
+    };
+    partition(0, static_cast<int>(data.size())-1);  
 }
 
 #endif // SORTING_TPP
