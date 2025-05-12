@@ -7,5 +7,5 @@ Algorithm-Pyground serves as a learning notebook for programming languages `(Pyt
 ## Table of Contents
 - [DataStructure](data_structure/README.MD)
 - [Sorting](sortlib/README.MD)
-- [Dynamic Programming](dp/README.MD)
 - [Image Processing](image_processing/README.MD)
+- [Tensor](tensor/README.MD)
