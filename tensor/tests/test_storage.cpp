@@ -1,8 +1,8 @@
 #include <iostream>
 #include <cassert>
 #include <vector>
-#include "storage.h"
-#include "device.h"
+#include "storage/storage.h"
+#include "device/device.h"
 
 void test_cpu_storage() {
     std::cout << "[TEST] Storage (CPU) basic operations\n";

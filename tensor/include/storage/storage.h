@@ -3,9 +3,9 @@
 #include <cstddef>
 #include <memory>
 #include <stdexcept>
-#include "device.h"
-#include "dtype.h"
-#include "mem_util.h"
+#include "device/device.h"
+#include "dtype/dtype.h"
+#include "mem/mem_util.h"
 
 // type-erased raw memory
 class Storage {

@@ -1,4 +1,4 @@
-#include "tensor.h"
+#include "tensor/tensor.h"
 #include <iostream>
 #include <cassert>
 
@@ -33,7 +33,7 @@ void test_clone() {
     data[0] = 10; data[1] = 20; data[2] = 30; data[3] = 40;
 
     auto t2 = t.clone();
-    auto* data2 = t2->data_as<int>();
+    auto* data2 = t2.data_as<int>();
 
     for (int i = 0; i < 4; ++i) {
         assert(data[i] == data2[i]);

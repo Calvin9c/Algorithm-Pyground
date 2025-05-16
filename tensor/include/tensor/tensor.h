@@ -2,9 +2,9 @@
 
 #include <vector>
 #include <stdexcept>
-#include "dtype.h"
-#include "device.h"
-#include "storage.h"
+#include "dtype/dtype.h"
+#include "device/device.h"
+#include "storage/storage.h"
 
 class Tensor {
 public:
@@ -38,21 +38,61 @@ public:
     }
     int64_t numel() const;
     DType dtype() const {return _dtype;}
+    ScalarType scalar_type() const {return _dtype.type();}
     const Device& device() const {return _storage->device();}
 
     // data access
     void* data() const {return _storage->data();}
     
     template <typename Scalar>
-    Scalar* data_as() const {return _storage->data_as<Scalar>();}
+    Scalar* data_as() const {
+        if (!_dtype.is<Scalar>()) {
+            throw std::runtime_error("Tensor::data_as(): dtype mismatch");
+        }
+        return _storage->data_as<Scalar>();
+    }
 
     size_t nbytes() const {return _storage->nbytes();}
     bool empty() const {return _storage->nbytes()==0;}
 
     void clear();
     void resize(const std::vector<int64_t> &new_shape);
-    std::shared_ptr<Tensor> clone() const;
+    Tensor clone() const;
 
+    template<typename Scalar>
+    Scalar item() const {
+        if (!_dtype.is<Scalar>()) {
+            throw std::runtime_error("Tensor::item(): dtype mismatch");
+        }
+        if (numel()!=1) {
+            throw std::runtime_error("Tensor::item() requires numel == 1");
+        }
+        return data_as<Scalar>()[0];
+    }
+
+    template<typename Scalar>
+    Scalar& at(const std::vector<int64_t> &index) {
+        if (!_dtype.is<Scalar>()) {
+            throw std::runtime_error("Tensor::at(): dtype mismatch");
+        }
+        if (index.size() != _shape.size()) {
+            throw std::runtime_error("Tensor::at(): index dimension mismatch");
+        }
+
+        const int N = index.size();
+        int64_t flat_i = 0;
+        int64_t stride = 1;
+        for (int i=N-1; i>=0; --i) {
+            if (index[i]>=_shape[i] || index[i]<0) {
+                throw std::out_of_range("Tensor::at(): index out of bounds");
+            }
+            flat_i += (index[i] * stride);
+            stride *= _shape[i];
+        }
+        return data_as<Scalar>()[flat_i];
+    }
+
+    Tensor to(DType dtype) const;
     Tensor to(Device new_device) const;
     Tensor cpu() const;
     Tensor cuda(int index=0) const;

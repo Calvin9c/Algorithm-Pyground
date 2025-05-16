@@ -3,7 +3,7 @@
 #include <cstddef>
 #include <stdexcept>
 #include <string>
-#include "device.h"
+#include "device/device.h"
 
 #define CUDA_CHECK(call)                                          \
     do {                                                          \

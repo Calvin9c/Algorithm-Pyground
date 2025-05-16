@@ -1,5 +1,5 @@
-#include "tensor.h"
-#include "tensor_op.h"
+#include "tensor/tensor.h"
+#include "tensor/tensor_op.h"
 #include <iostream>
 #include <cassert>
 
@@ -26,7 +26,6 @@ void assert_equal(const Tensor& a, const Tensor& b, float eps = 1e-5f) {
 void test_add_mul_cpu_cuda_consistency() {
     std::cout << "[TEST] Tensor add/mul across CPU and CUDA\n";
     
-
     Tensor a_cpu({4}, DType::from<float>(), Device::CPU());
     Tensor b_cpu({4}, DType::from<float>(), Device::CPU());
 

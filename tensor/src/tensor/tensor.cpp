@@ -1,8 +1,8 @@
-#include "tensor.h"
-#include "dtype.h"
-#include "device.h"
-#include "mem_util.h"
-#include "tensor_op.h"
+#include "tensor/tensor.h"
+#include "dtype/dtype.h"
+#include "device/device.h"
+#include "tensor/tensor_op.h"
+#include <iostream>
 
 Tensor::Tensor():
 _shape(), _dtype(DType()) {
@@ -14,7 +14,6 @@ _shape(shape), _dtype(dtype) {
     if (shape.empty()) {
         throw std::invalid_argument("Tensor shape cannot be empty.");
     }
-
     int64_t num_elements = 1;
     for (const int64_t &s: shape) {
         if (s<=0) {
@@ -73,12 +72,21 @@ void Tensor::resize(const std::vector<int64_t> &new_shape) {
     _shape = new_shape;
 }
 
-std::shared_ptr<Tensor> Tensor::clone() const {
-    auto cloned = std::make_shared<Tensor>();
-    cloned->_shape = _shape;
-    cloned->_dtype = _dtype;
-    cloned->_storage = _storage->clone();
-    return cloned;
+Tensor Tensor::clone() const {
+    Tensor res;
+    res._shape = _shape;
+    res._dtype = _dtype;
+    res._storage = _storage->clone();
+    return res;
+}
+
+Tensor Tensor::to(DType dtype) const {
+    if (dtype==_dtype) {
+        return clone();
+    }
+    Tensor res(_shape, dtype, device());
+    tensor_op::cast(*this, res);
+    return res;
 }
 
 Tensor Tensor::to(Device new_device) const {

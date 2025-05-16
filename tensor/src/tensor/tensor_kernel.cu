@@ -1,6 +1,6 @@
-#include "tensor.h"
-#include "tensor_kernel.h"
-#include "dtype.h"
+#include "tensor/tensor.h"
+#include "tensor/tensor_kernel.h"
+#include "dtype/dtype.h"
 #include <cassert>
 
 namespace /*kernel*/ {
@@ -25,6 +25,14 @@ namespace /*kernel*/ {
         size_t i = blockIdx.x * blockDim.x + threadIdx.x;
         if (i<n && a[i]!=b[i]) {
             *out = false;
+        }
+    }
+
+    template<typename SrcScalar, typename DstScalar>
+    __global__ void cast_kernel(const SrcScalar *src, DstScalar *dst, const int64_t n) {
+        size_t i = blockIdx.x * blockDim.x + threadIdx.x;
+        if (i<n) {
+            dst[i] = static_cast<DstScalar>(src[i]);
         }
     }
 } // namespace anonymous
@@ -65,16 +73,32 @@ namespace cuda {
         eq_kernel<Scalar><<<grid_dim, block_dim>>>(a_ptr, b_ptr, out_ptr, a.numel());
         cudaDeviceSynchronize();
     }
+    template<typename SrcScalar, typename DstScalar>
+    void launch_cast_kernel(const Tensor &src, Tensor &dst){
+        const SrcScalar *src_ptr = src.data_as<SrcScalar>();
+        DstScalar *dst_ptr = dst.data_as<DstScalar>();
+        
+        constexpr int block_dim = 256;
+        int grid_dim = (src.numel()+block_dim-1) / block_dim;
+        cast_kernel<SrcScalar, DstScalar><<<grid_dim, block_dim>>>(src_ptr, dst_ptr, src.numel());
+        cudaDeviceSynchronize();
+    }
 } // namespace cuda
 } // namespace tensor_kernel
 
 // init
-#define OP(scalar_type, cpp_scalar, ...) \
+#define INSTANTIATION(scalar_type, cpp_scalar, ...) \
 template void tensor_kernel::cuda::launch_add_kernel<cpp_scalar>( \
     const Tensor&, const Tensor&, Tensor&);                       \
 template void tensor_kernel::cuda::launch_mul_kernel<cpp_scalar>( \
     const Tensor&, const Tensor&, Tensor&);                       \
 template void tensor_kernel::cuda::launch_eq_kernel<cpp_scalar>(  \
     const Tensor&, const Tensor&, bool&);
-FOR_EACH_SCALAR_TYPE(OP)
-#undef OP
+FOR_EACH_SCALAR_TYPE(INSTANTIATION)
+#undef INSTANTIATION
+
+#define INSTANTIATION(src_scalar_type, src_scalar, dst_scalar_type, dst_scalar) \
+template void tensor_kernel::cuda::launch_cast_kernel<src_scalar, dst_scalar>( \
+    const Tensor&, Tensor&);
+FOR_EACH_SCALAR_TYPE_PAIR(INSTANTIATION)
+#undef INSTANTIATION

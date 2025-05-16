@@ -1,44 +1,58 @@
 cmake_minimum_required(VERSION 3.18)
 project(tensorlib LANGUAGES C CXX CUDA)
 
-# 設定編譯器標準與 flags
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CUDA_STANDARD 17)
 set(CMAKE_CUDA_STANDARD_REQUIRED ON)
 
-# 啟用 position independent code（支援 .so/.a）
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-# === 所有源碼 ===
-set(SOURCES
-    device.h
-    dtype.h
-    mem_util.cpp
-    mem_util.h
-    storage.cpp
-    storage.h
-    tensor.cpp
-    tensor.h
-    tensor_op.cpp
-    tensor_op.h
-    tensor_kernel.cpp
-    tensor_kernel.cu
-    tensor_kernel.h
+set(TENSOR_SRC
+    src/tensor/tensor.cpp
+    src/tensor/tensor_op.cpp
+    src/tensor/tensor_kernel.cpp
+    src/tensor/tensor_kernel.cu
 )
 
-# === 建立靜態庫 ===
-add_library(tensorlib STATIC ${SOURCES})
+set(STORAGE_SRC
+    src/storage/storage.cpp
+)
 
-# === 對 CUDA 檔案使用不同 flags（可選）===
-set_target_properties(tensorlib PROPERTIES
+set(MEM_SRC
+    src/mem/mem_util.cpp
+)
+
+set(SOURCES
+    ${TENSOR_SRC}
+    ${STORAGE_SRC}
+    ${MEM_SRC}
+)
+
+option(BUILD_SHARED_LIBS
+    "Build shared libraries instead of static ones" OFF
+)
+
+add_library(tensor ${SOURCES})
+
+set_target_properties(tensor PROPERTIES
     CUDA_SEPARABLE_COMPILATION ON
     CUDA_ARCHITECTURES "60;70;75;86"
 )
 
-# === 包含目錄 ===
-target_include_directories(tensorlib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(tensor
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
 
-# === CUDA 依賴 ===
 find_package(CUDAToolkit REQUIRED)
-target_link_libraries(tensorlib PUBLIC CUDA::cudart)
+target_link_libraries(tensor PUBLIC CUDA::cudart)
+
+enable_testing()
+file(GLOB TEST_FILES tests/test_*.cpp)
+foreach(f IN LISTS TEST_FILES)
+    get_filename_component(test ${f} NAME_WE)
+    add_executable(${test} ${f})
+    target_link_libraries(${test} tensor)
+    add_test(NAME ${test} COMMAND ${test})
+endforeach()

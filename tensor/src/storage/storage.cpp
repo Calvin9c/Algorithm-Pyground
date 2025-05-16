@@ -1,6 +1,6 @@
-#include "mem_util.h"
-#include "storage.h"
-#include "dtype.h"
+#include "mem/mem_util.h"
+#include "storage/storage.h"
+#include "dtype/dtype.h"
 #include <stdexcept>
 #include <cstring>
 
@@ -96,7 +96,7 @@ void Storage::_deallocate() {
     }
 }
 
-#define OP(scalar_type, cpp_scalar, ...) \
+#define INSTANTIATION(scalar_type, cpp_scalar, ...) \
 template cpp_scalar* Storage::data_as<cpp_scalar>() const;
-FOR_EACH_SCALAR_TYPE(OP)
-#undef OP
+FOR_EACH_SCALAR_TYPE(INSTANTIATION)
+#undef INSTANTIATION

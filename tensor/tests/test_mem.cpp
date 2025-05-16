@@ -1,8 +1,8 @@
 #include <iostream>
 #include <cassert>
 #include <cstring>
-#include "mem_util.h"
-#include "device.h"
+#include "mem/mem_util.h"
+#include "device/device.h"
 
 using namespace std;
 

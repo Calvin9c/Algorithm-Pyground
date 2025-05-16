@@ -1,5 +1,5 @@
-#include "mem_util.h"
-#include "device.h"
+#include "mem/mem_util.h"
+#include "device/device.h"
 #include <cstdlib>
 #include <cstring>
 #include <stdexcept>

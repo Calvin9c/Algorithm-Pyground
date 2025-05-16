@@ -1,6 +1,6 @@
 #pragma once
 
-#include "tensor.h"
+#include "tensor/tensor.h"
 
 namespace tensor_kernel {
 
@@ -11,6 +11,8 @@ namespace cpu {
     void launch_mul_kernel(const Tensor &a, const Tensor &b, Tensor &out);
     template<typename Scalar>
     void launch_eq_kernel(const Tensor &a, const Tensor &b, bool &out);
+    template<typename SrcScalar, typename DstScalar>
+    void launch_cast_kernel(const Tensor &src, Tensor &dst);
 } // namespace cpu
 
 namespace cuda {
@@ -20,6 +22,8 @@ namespace cuda {
     void launch_mul_kernel(const Tensor &a, const Tensor &b, Tensor &out);
     template<typename Scalar>
     void launch_eq_kernel(const Tensor &a, const Tensor &b, bool &out);
+    template<typename SrcScalar, typename DstScalar>
+    void launch_cast_kernel(const Tensor &src, Tensor &dst);
 } // namespace cuda
 
 }
