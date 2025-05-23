@@ -5,16 +5,13 @@
 #include <iostream>
 
 Tensor::Tensor():
-_shape(), _dtype(DType()) {
+_shape(), _stride(), _dtype(DType()) {
     _storage = std::make_shared<Storage>(0, Device::CPU());
 }
 
 Tensor::Tensor(const std::vector<int64_t> &shape, DType dtype, Device device):
-_shape(shape), _dtype(dtype) {
-    if (shape.empty()) {
-        throw std::invalid_argument("Tensor shape cannot be empty.");
-    }
-    int64_t num_elements = 1;
+_shape(shape), _stride(init_stride(shape)), _dtype(dtype) {
+    int64_t num_elements = shape.empty() ? 0 : 1;
     for (const int64_t &s: shape) {
         if (s<=0) {
             throw std::invalid_argument("Tensor dimisions must be positive.");
@@ -26,7 +23,7 @@ _shape(shape), _dtype(dtype) {
 }
 
 Tensor::Tensor(void *external_ptr, const std::vector<int64_t> &shape, DType dtype, Device device):
-_shape(shape), _dtype(dtype) {
+_shape(shape), _stride(init_stride(shape)), _dtype(dtype) {
     if (!external_ptr) {
         throw std::invalid_argument("External pointer cannot be null.");
     }

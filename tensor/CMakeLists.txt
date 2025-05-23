@@ -45,8 +45,13 @@ target_include_directories(tensor
         ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
+find_package(OpenMP REQUIRED)
 find_package(CUDAToolkit REQUIRED)
-target_link_libraries(tensor PUBLIC CUDA::cudart)
+target_link_libraries(tensor
+    PUBLIC 
+        CUDA::cudart
+        OpenMP::OpenMP_CXX
+)
 
 enable_testing()
 file(GLOB TEST_FILES tests/test_*.cpp)

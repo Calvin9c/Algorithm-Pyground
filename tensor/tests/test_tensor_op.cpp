@@ -33,14 +33,22 @@ void test_add_mul_cpu_cuda_consistency() {
     fill_tensor(b_cpu, 10.f);  // [10,11,12,13]
 
     Tensor add_cpu = tensor_op::add(a_cpu, b_cpu); // [10,12,14,16]
-
     Tensor mul_cpu = tensor_op::mul(a_cpu, b_cpu); // [0,11,24,39]
+
 
     Tensor a_cuda = a_cpu.cuda();
     Tensor b_cuda = b_cpu.cuda();
 
+    
+    std::cout<<"enter GPU add and mul;\n";
+
     Tensor add_cuda = tensor_op::add(a_cuda, b_cuda).cpu(); // back to CPU
+
+    std::cout<<"pass GPU add;\n";
+
     Tensor mul_cuda = tensor_op::mul(a_cuda, b_cuda).cpu();
+
+    std::cout<<"pass GPU mul;\n";
 
     assert_equal(add_cpu, add_cuda);
     assert_equal(mul_cpu, mul_cuda);

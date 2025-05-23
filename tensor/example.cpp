@@ -2,6 +2,7 @@
 #include <vector>
 #include <assert.h>
 #include "tensor/tensor.h"
+#include "tensor/tensor_op.h"
 #include "dtype/dtype.h"
 
 using namespace std;

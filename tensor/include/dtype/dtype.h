@@ -4,6 +4,7 @@
 #include <string>
 #include <stdexcept>
 #include <type_traits>
+#include "device/device.h"
 
 // --------------------------------------
 // SUPPORT_SCALARS 
@@ -20,6 +21,9 @@
     MACRO(FLOAT32, float,    __VA_ARGS__) \
     MACRO(FLOAT64, double,   __VA_ARGS__)
 
+#define UNKNOWN_SCALAR(MACRO, ...) \
+    MACRO(UNKNOWN, void, __VA_ARGS__)
+
 #define EXPAND_WITH_DST(SRC_ENUM, SRC_CPP, MACRO) \
     MACRO(SRC_ENUM, SRC_CPP, INT8,    int8_t  )   \
     MACRO(SRC_ENUM, SRC_CPP, INT16,   int16_t )   \
@@ -35,10 +39,7 @@
 #define FOR_EACH_SCALAR_TYPE_PAIR(MACRO) \
     FOR_EACH_SCALAR_TYPE(EXPAND_WITH_DST, MACRO)
 
-#define UNKNOWN_SCALAR(MACRO, ...) \
-    MACRO(UNKNOWN, void, __VA_ARGS__)
-
-#define SWITCH_CASE(SCALAR_TYPE, CPP_SCALAR, ...) \
+#define BUILD_SWITCH_CASE(SCALAR_TYPE, CPP_SCALAR, ...) \
     case ScalarType::SCALAR_TYPE: { \
         using cpp_scalar = CPP_SCALAR; \
         __VA_ARGS__; \
@@ -47,9 +48,34 @@
 
 #define DISPATCH_BY_SCALAR_TYPE(SCALAR_TYPE, ...) \
     switch (SCALAR_TYPE) { \
-        FOR_EACH_SCALAR_TYPE(SWITCH_CASE, __VA_ARGS__) \
+        FOR_EACH_SCALAR_TYPE(BUILD_SWITCH_CASE, __VA_ARGS__) \
         default: \
             throw std::runtime_error("Unsupported ScalarType in dispatch."); \
+    }
+
+#define MATMUL_SCALAR_TYPE(MACRO, ...) \
+    MACRO(FLOAT32, float,  __VA_ARGS__) \
+    MACRO(FLOAT64, double, __VA_ARGS__)
+
+#define MATMUL_KERNEL(SCALAR_TYPE, FN) \
+    switch (SCALAR_TYPE) { \
+        MATMUL_SCALAR_TYPE(BUILD_SWITCH_CASE, FN) \
+        default: \
+            throw std::runtime_error("Unsupported ScalarType in dispatch."); \
+    }
+
+#define DISPATCH_TO_KERNEL(DEVICE_TYPE, SCALAR_TYPE, KERNEL, LAUNCHER, ...) \
+    switch (DEVICE_TYPE) { \
+        case DeviceType::CPU: { \
+            KERNEL(SCALAR_TYPE, tensor_kernel::cpu::LAUNCHER<cpp_scalar>(__VA_ARGS__)) \
+            break; \
+        } \
+        case DeviceType::CUDA: { \
+            KERNEL(SCALAR_TYPE, tensor_kernel::cuda::LAUNCHER<cpp_scalar>(__VA_ARGS__)) \
+            break; \
+        } \
+        default: \
+            throw std::runtime_error("Unsupported Backend in dispatch."); \
     }
 
 // --------------------------------------
